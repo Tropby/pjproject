@@ -343,7 +343,7 @@ pjsua_buddy_get_dlg_event_info( pjsua_buddy_id buddy_id,
 
     PJ_ASSERT_RETURN(pjsua_buddy_is_valid(buddy_id),  PJ_EINVAL);
 
-    pj_bzero(info, sizeof(pjsua_buddy_dlg_event_info));
+    //pj_bzero(info, sizeof(pjsua_buddy_dlg_event_info));
 
     status = lock_buddy("pjsua_buddy_get_dlg_event_info()", buddy_id, &lck, 0);
     if (status != PJ_SUCCESS)
@@ -356,10 +356,16 @@ pjsua_buddy_get_dlg_event_info( pjsua_buddy_id buddy_id,
         return PJ_SUCCESS;
     }
 
+    memcpy(info, &(buddy->dlg_ev_status), sizeof(buddy->dlg_ev_status));
+
+    unlock_buddy(&lck);
+    return PJ_SUCCESS;
+    
     /* uri */
     info->uri.ptr = info->buf_ + total;
     pj_strncpy(&info->uri, &buddy->uri, sizeof(info->buf_)-total);
     total += info->uri.slen;
+
 
     COPY_TO_BUF(buddy->dlg_ev_status.info[0], dialog_info_state);
     COPY_TO_BUF(buddy->dlg_ev_status.info[0], dialog_info_entity);
@@ -380,6 +386,7 @@ pjsua_buddy_get_dlg_event_info( pjsua_buddy_id buddy_id,
         COPY_TO_BUF(buddy->dlg_ev_status.info[0], remote_identity_display);
         COPY_TO_BUF(buddy->dlg_ev_status.info[0], remote_target_uri);
     }
+
 
     /* subscription state and termination reason */
     info->sub_term_code = buddy->term_code;
